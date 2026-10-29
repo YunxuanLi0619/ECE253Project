@@ -1,0 +1,7 @@
+opencv-python
+scikit-image
+numpy
+scipy
+jiwer
+pytest
+matplotlib
