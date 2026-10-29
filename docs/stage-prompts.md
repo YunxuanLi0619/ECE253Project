@@ -1,6 +1,6 @@
 # Stage Opening Prompts
 
-At the start of each stage, copy and send the matching prompt. Stage 0 attaches the PDF; afterwards the key content has been distilled into `CONTEXT.md`, so the prompts no longer attach the PDF; add `@"ECE 253 课程项目计划：手机拍摄文档的 OCR 预处理.pdf"` manually when the original text needs checking.
+At the start of each stage, copy and send the matching prompt. Stage 0 attaches the PDF; afterwards the key content has been distilled into `CONTEXT.md`, so the prompts no longer attach the PDF; add `@"ECE 253 Course Project Plan - OCR Preprocessing for Phone-Captured Documents.pdf"` manually when the original text needs checking.
 
 Flow of each stage: `/grill-with-docs` → (optional) `/to-spec` → `/to-tickets` → `/implement` → accept against the completion criteria.
 
@@ -11,7 +11,7 @@ Hard milestones: 10/6 team form · 11/3 proposal · 11/10 midterm sign-up and ch
 ## Stage 0: Project setup and environment (until 10/6)
 
 ```
-/grill-with-docs @"ECE 253 课程项目计划：手机拍摄文档的 OCR 预处理.pdf" Stage 0: project setup and environment. Environment setup for Python/OpenCV/Tesseract/jiwer, the convention of the CER/WER evaluation script (whether to normalize text, how to handle whitespace and punctuation, which Tesseract version and PSM parameters to fix), the project directory structure, the glossary (CER, WER, clean baseline, combo set, P0–P6, etc.)
+/grill-with-docs @"ECE 253 Course Project Plan - OCR Preprocessing for Phone-Captured Documents.pdf" Stage 0: project setup and environment. Environment setup for Python/OpenCV/Tesseract/jiwer, the convention of the CER/WER evaluation script (whether to normalize text, how to handle whitespace and punctuation, which Tesseract version and PSM parameters to fix), the project directory structure, the glossary (CER, WER, clean baseline, combo set, P0–P6, etc.)
 ```
 
 **Completion criteria**: the evaluation script runs through on one test image; the email confirming working solo has been sent.
