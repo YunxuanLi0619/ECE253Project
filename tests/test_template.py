@@ -110,7 +110,7 @@ def test_checklist_is_grouped_by_page_with_checkboxes_and_marks_pilot_pages(tmp_
     assert len(re.findall(r"^- \[ \] ", text, flags=re.M)) == 432
     assert "- [ ] p07_blur_2.jpg" in text and "- [ ] p07_persp_3.jpg" in text
     headings = {m.group(1): m.group(0) for m in re.finditer(r"^#+ .*?(p\d{2}).*$", text, flags=re.M)}
-    assert "试拍" in headings["p02"] and "试拍" not in headings["p01"]
+    assert "pilot" in headings["p02"] and "pilot" not in headings["p01"]
     assert {r["pilot"] for r in s.rows() if r["page_id"] == "p02"} == {"true"}
     assert {r["pilot"] for r in s.rows() if r["page_id"] == "p01"} == {"false"}
 

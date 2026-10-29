@@ -1,81 +1,81 @@
-# 阶段开场指令
+# Stage Opening Prompts
 
-每个阶段开始时,复制对应指令发送。阶段 0 附 PDF;之后关键内容已沉淀进 `CONTEXT.md`,指令里不再附 PDF,需要核对原文时再手动加上 `@"ECE 253 课程项目计划：手机拍摄文档的 OCR 预处理.pdf"`。
+At the start of each stage, copy and send the matching prompt. Stage 0 attaches the PDF; afterwards the key content has been distilled into `CONTEXT.md`, so the prompts no longer attach the PDF; add `@"ECE 253 课程项目计划：手机拍摄文档的 OCR 预处理.pdf"` manually when the original text needs checking.
 
-每个阶段的流程:`/grill-with-docs` → (可选)`/to-spec` → `/to-tickets` → `/implement` → 对照完成标准验收。
+Flow of each stage: `/grill-with-docs` → (optional) `/to-spec` → `/to-tickets` → `/implement` → accept against the completion criteria.
 
-硬节点:10/6 组队表 · 11/3 proposal · 11/10 中期报名与检查点 · 11/18–20 中期展示 · 11/24 终展报名 · 12/5–7 终展 · 12/11 报告
-
----
-
-## 阶段 0:立项与环境(到 10/6)
-
-```
-/grill-with-docs @"ECE 253 课程项目计划：手机拍摄文档的 OCR 预处理.pdf" 阶段0:立项与环境。Python/OpenCV/Tesseract/jiwer 的环境搭建、CER/WER 评测脚本的口径(是否做文本归一化、空白和标点怎么处理、Tesseract 版本和 PSM 参数固定为多少)、项目目录结构、术语表(CER、WER、清晰基准、叠加组、P0–P6 等)
-```
-
-**完成标准**:评测脚本在一张测试图上跑通;单人确认的邮件已发出。
+Hard milestones: 10/6 team form · 11/3 proposal · 11/10 midterm sign-up and checkpoint · 11/18–20 midterm presentation · 11/24 final presentation sign-up · 12/5–7 final presentation · 12/11 report
 
 ---
 
-## 阶段 1:数据采集与基线(到 10/20)
+## Stage 0: Project setup and environment (until 10/6)
 
 ```
-/grill-with-docs 阶段1:数据采集与基线。重点问清:30–40 页 PDF 的选取(论文页/书页/小票/表格的比例)、拍摄协议(每页 12 张的条件与手机分工)、文件命名 doc编号_条件_序号.jpg 与元数据 CSV 字段、按页的调参/测试划分(固定随机种子)、先试拍小批的判定标准、公开数据集的核对清单(下载方式与许可)、基线评测按文档类型分别汇报的口径
+/grill-with-docs @"ECE 253 课程项目计划：手机拍摄文档的 OCR 预处理.pdf" Stage 0: project setup and environment. Environment setup for Python/OpenCV/Tesseract/jiwer, the convention of the CER/WER evaluation script (whether to normalize text, how to handle whitespace and punctuation, which Tesseract version and PSM parameters to fix), the project directory structure, the glossary (CER, WER, clean baseline, combo set, P0–P6, etc.)
 ```
 
-**完成标准**:约 360 张图 + 元数据 CSV;模糊、阴影、透视三种条件的基线 CER 都明显高于清晰基准,否则重拍。
+**Completion criteria**: the evaluation script runs through on one test image; the email confirming working solo has been sent.
 
 ---
 
-## 阶段 2:预实验与 proposal(到 11/3)
+## Stage 1: Data collection and baseline (until 10/20)
 
 ```
-/grill-with-docs 阶段2:预实验与 proposal。重点问清:三个最简原型(Wiener、背景除法+Sauvola、轮廓角点+单应)的统一接口(输入输出、参数、保存路径)、先在已知 PSF 的合成数据上验证 Wiener 的做法、合成数据的生成流程(先阴影、再透视、最后模糊)、proposal 的结构与要引用的文献、原型成功的判定(至少部分图 CER 下降)
+/grill-with-docs Stage 1: data collection and baseline. Pin down in particular: the selection of 30–40 PDF pages (mix of paper pages/book pages/receipts/tables), the capture protocol (conditions for the 12 shots per page and the division of labor between phones), the file naming doc-id_condition_seq.jpg and the metadata CSV fields, the by-page tuning/test split (fixed random seed), the pass criteria for the small pilot batch, the checklist for public datasets (download method and license), and the convention of reporting the baseline evaluation separately by document type
 ```
 
-**完成标准**:三个原型都能让至少一部分图的 CER 下降;11/3 晚 11:59 前提交 proposal。
+**Completion criteria**: about 360 images + metadata CSV; the baseline CER of the blur, shadow and perspective conditions is clearly above the clean baseline, otherwise reshoot.
 
 ---
 
-## 阶段 3:主方法与中期展示准备(到 11/10 检查点)
+## Stage 2: Preliminary experiments and proposal (until 11/3)
 
 ```
-/grill-with-docs 阶段3:主方法。重点问清:透视与阴影主方法的完善点(角点失败的处理、核大小与阈值窗口)、模糊 PSF 估计(频谱暗条纹/倒谱)的实现与上界对照(已知 PSF)、"带与不带预处理"的 CER 对比表格式、11/10 检查点的判定与裁剪触发条件(对照 PDF 第 8 节裁剪顺序)
+/grill-with-docs Stage 2: preliminary experiments and proposal. Pin down in particular: the unified interface of the three simplest prototypes (Wiener, background division + Sauvola, contour corners + homography) (inputs/outputs, parameters, save paths), how to validate Wiener first on synthetic data with a known PSF, the generation pipeline of the synthetic data (shadow first, then perspective, finally blur), the structure of the proposal and the literature to cite, and the criterion for prototype success (CER drops on at least some images)
 ```
 
-**完成标准**:三种缺陷各有“带与不带预处理”的 CER 对比,粗糙也可以;11/10 前报名中期展示。未达标就按裁剪顺序砍范围。
+**Completion criteria**: all three prototypes lower the CER of at least some images; submit the proposal before 11:59 pm on 11/3.
 
 ---
 
-## 阶段 4:中期展示(11/18–20)
-
-偏执行,不需要完整 grill。简短版:
+## Stage 3: Primary methods and midterm presentation prep (until the 11/10 checkpoint)
 
 ```
-/grill-me 阶段4:中期展示。帮我梳理 slides 结构(问题、方法、初步结果、下一步),并确定哪些图表最能说明“预处理有效”
+/grill-with-docs Stage 3: primary methods. Pin down in particular: refinements to the perspective and shadow primary methods (handling of corner-detection failures, kernel size and threshold window), the implementation of blur PSF estimation (spectral dark stripes/cepstrum) and the upper-bound comparison (known PSF), the format of the "with vs. without preprocessing" CER comparison table, and the judgment at the 11/10 checkpoint and the triggers for cutting scope (per the cut order in section 8 of the PDF)
 ```
 
-**完成标准**:slides 在 11/20 晚 11:59 前上传;按老师和同学反馈列出后续改动清单。
+**Completion criteria**: each of the three defects has a "with vs. without preprocessing" CER comparison, which may be rough; sign up for the midterm presentation before 11/10. If not met, cut scope according to the cut order.
 
 ---
 
-## 阶段 5:对照方法、改进与组合实验(到 12/5)
+## Stage 4: Midterm presentation (11/18–20)
+
+Mostly execution; a full grill is not needed. Short version:
 
 ```
-/grill-with-docs 阶段5:对照方法、改进与组合实验。重点问清:第二个传统方法(Richardson-Lucy、同态滤波+Retinex、Hough+RANSAC)的实现边界、针对自采数据的自适应改进(K 与核大小按笔画宽度/行高、角点兜底策略)、参数扫描的范围与曲线格式、合成数据的参数记录、P0–P6 顺序消融的实验设计(每组输入、输出、统计方式)、报告方法与数据两节的提纲
+/grill-me Stage 4: midterm presentation. Help me organize the slide structure (problem, method, preliminary results, next steps) and decide which charts best show that "preprocessing works"
 ```
 
-**完成标准**:实验矩阵里每一行都有数;11/24 前报名终展。
+**Completion criteria**: slides uploaded before 11:59 pm on 11/20; a list of follow-up changes drawn up from the feedback of the instructor and classmates.
 
 ---
 
-## 阶段 6:终展与报告(到 12/11)
-
-偏执行。简短版:
+## Stage 5: Comparison methods, improvements and combination experiments (until 12/5)
 
 ```
-/grill-me 阶段6:终展与报告。帮我对照 handout 的章节顺序,梳理报告每章的素材来源与缺口,并问清实验结果和假设不一致时的分析写法
+/grill-with-docs Stage 5: comparison methods, improvements and combination experiments. Pin down in particular: the implementation boundary of the second traditional method (Richardson-Lucy, homomorphic filtering + Retinex, Hough + RANSAC), the adaptive improvements for the self-collected data (K and kernel size by stroke width/line height, corner fallback strategy), the range of the parameter sweeps and the curve format, parameter logging for the synthetic data, the experiment design of the P0–P6 order ablation (inputs, outputs and statistics per group), and the outline of the report's method and data sections
 ```
 
-**完成标准**:终展 slides 在 12/7 晚 11:59 前上传;最终报告在 12/11 晚 11:59 前提交;贡献栏写 100%。
+**Completion criteria**: every row of the experiment matrix has numbers; sign up for the final presentation before 11/24.
+
+---
+
+## Stage 6: Final presentation and report (until 12/11)
+
+Mostly execution. Short version:
+
+```
+/grill-me Stage 6: final presentation and report. Help me follow the handout's chapter order, work out the source material and gaps for each chapter of the report, and ask how to write the analysis when the experimental results disagree with the hypothesis
+```
+
+**Completion criteria**: final slides uploaded before 11:59 pm on 12/7; final report submitted before 11:59 pm on 12/11; contribution field says 100%.

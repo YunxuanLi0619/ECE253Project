@@ -30,7 +30,7 @@ SPLITS = ("tuning", "test")
 
 FILENAME_RE = re.compile(r"^p(\d+)_([^_./]+)_(\d+)\.jpg$")
 PAGE_ID_RE = re.compile(r"^p?(\d+)$")
-FILENAME_FORMAT = "p<页>_<条件>_<序号>.jpg"
+FILENAME_FORMAT = "p<page>_<condition>_<seq>.jpg"
 
 
 @dataclass

@@ -55,18 +55,18 @@ def test_smartdoc_header_says_human_transcription(pub):
     fill_smartdoc(pub)
     run(pub)
     md = pub.report("smartdoc_qa")
-    table_header = next(line for line in md.splitlines() if line.startswith("| ") and "条件" in line)
-    assert "人工转写" in table_header
-    assert "人工转写" in md.split("\n")[0]
+    table_header = next(line for line in md.splitlines() if line.startswith("| ") and "Condition" in line)
+    assert "human transcription" in table_header
+    assert "human transcription" in md.split("\n")[0]
 
 
 def test_rdd_header_says_pseudo_ground_truth_relative_only(pub):
     fill_rdd(pub)
     run(pub)
     md = pub.report("rdd")
-    table_header = next(line for line in md.splitlines() if line.startswith("| ") and "条件" in line)
-    assert "伪 ground truth,仅相对改善" in table_header
-    assert "伪 ground truth,仅相对改善" in md.split("\n")[0]
+    table_header = next(line for line in md.splitlines() if line.startswith("| ") and "Condition" in line)
+    assert "pseudo ground truth, relative improvement only" in table_header
+    assert "pseudo ground truth, relative improvement only" in md.split("\n")[0]
 
 
 def test_rdd_scores_shadow_images_against_ocr_of_the_clean_image_of_the_scene(pub):
@@ -78,7 +78,7 @@ def test_rdd_scores_shadow_images_against_ocr_of_the_clean_image_of_the_scene(pu
     run(pub)
     s = pub.summary("rdd")
     assert s["conditions"] == ["shadow"]
-    c = cell(s, "shadow", "全部")
+    c = cell(s, "shadow", "all")
     assert c["n"] == 2
     # r1: 14 of 25 characters missing = 0.56; r2: 0
     assert c["mean"] == pytest.approx(0.28)
@@ -90,8 +90,8 @@ def test_reference_sources_never_share_a_table_or_file(pub):
     fill_rdd(pub)
     run(pub)
     sd, rdd = pub.report("smartdoc_qa"), pub.report("rdd")
-    assert "伪 ground truth" not in sd and "RDD" not in sd
-    assert "人工转写" not in rdd and "SmartDoc" not in rdd
+    assert "pseudo ground truth" not in sd and "RDD" not in sd
+    assert "human transcription" not in rdd and "SmartDoc" not in rdd
     assert not any(cls in rdd for cls in SD_CLASSES)
     assert [p.name for p in sorted(pub.out.glob("public_*.md"))] == ["public_rdd.md", "public_smartdoc_qa.md"]
 
@@ -110,7 +110,7 @@ def test_all_references_go_through_the_shared_normalization(pub):
     pub.add_rdd("r1_shadow.jpg", "r1", "shadow", "alpha bravo charlie\n\ndelta")
     run(pub)
     assert cell(pub.summary("smartdoc_qa"), "blur", SD_CLASSES[0])["mean"] == 0.0
-    assert cell(pub.summary("rdd"), "shadow", "全部")["mean"] == 0.0
+    assert cell(pub.summary("rdd"), "shadow", "all")["mean"] == 0.0
 
 
 def test_cells_are_page_level_means_with_n_and_median(pub):
@@ -124,7 +124,7 @@ def test_cells_are_page_level_means_with_n_and_median(pub):
     assert c["mean"] == pytest.approx((0.04 + 0.12) / 2)
     assert c["median"] == pytest.approx(0.08)
     assert c["ci"] is None
-    assert "n 太小" in pub.report("smartdoc_qa")
+    assert "n too small" in pub.report("smartdoc_qa")
 
 
 def test_stdout_names_each_table_and_its_reference(pub, capsys):
@@ -132,8 +132,8 @@ def test_stdout_names_each_table_and_its_reference(pub, capsys):
     fill_rdd(pub)
     run(pub)
     out = capsys.readouterr().out
-    assert "smartdoc_qa" in out and "人工转写" in out
-    assert "rdd" in out and "伪 ground truth" in out
+    assert "smartdoc_qa" in out and "human transcription" in out
+    assert "rdd" in out and "pseudo ground truth" in out
 
 
 # --- errors name the culprit and write nothing ---

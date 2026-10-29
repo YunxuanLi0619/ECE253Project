@@ -1,9 +1,9 @@
 """Public-dataset tables, one per reference source (ADR-0002).
 
   <root>/smartdoc_qa/manifest.csv  filename, page_id, doc_class, distortion, reference
-                      images/<filename>, transcriptions/<reference>   -> reference: 人工转写
+                      images/<filename>, transcriptions/<reference>   -> reference: human transcription
   <root>/rdd/manifest.csv          filename, page_id, condition (clean | shadow)
-                      images/<filename>                               -> reference: 伪 ground truth
+                      images/<filename>                               -> reference: pseudo ground truth
 
 Reference texts all go through the shared `normalize`. RDD has no text: the reference of a scene's shadow
 images is the OCR of that scene's clean image. Each dataset gets its own report file; the sources are never
@@ -21,9 +21,9 @@ from .ocr import OCR_CONFIG, tesseract_version
 from .report import MIN_PAGES_FOR_CI, _cell, _fmt_cell, _page_means
 
 CACHE_FILE = "public_ocr_cache.json"
-PSEUDO_GT = "伪 ground truth,仅相对改善"
-HUMAN = "人工转写"
-RDD_COLUMN = "全部"
+PSEUDO_GT = "pseudo ground truth, relative improvement only"
+HUMAN = "human transcription"
+RDD_COLUMN = "all"
 SMARTDOC_COLUMNS = ("filename", "page_id", "doc_class", "distortion", "reference")
 RDD_COLUMNS = ("filename", "page_id", "condition")
 RDD_CONDITIONS = ("clean", "shadow")
@@ -172,13 +172,13 @@ def _aggregate(records: list[dict]) -> tuple[list[str], list[str], dict]:
 
 def _render(title: str, note: str, reference: str, column_label: str, columns: list[str],
             conditions: list[str], cells: dict, header: dict) -> str:
-    out = [f"# {title}", "", note, "", "## 评测配置", ""]
+    out = [f"# {title}", "", note, "", "## Evaluation Configuration", ""]
     out += [f"- {k}: {v}" for k, v in header.items()]
     for metric in ("cer", "wer"):
-        out += ["", f"## {metric.upper()}(参照:{reference})", "",
-                f"格内为页层宏平均(先对同页同条件的图取均值,再对页取均值);n = 页数;"
-                f"n ≥ {MIN_PAGES_FOR_CI} 才给按页自助法 95% 区间。", ""]
-        out += [f"| 条件 \\ {column_label}(参照:{reference}) | " + " | ".join(columns) + " |",
+        out += ["", f"## {metric.upper()} (reference: {reference})", "",
+                f"Cells are page-level macro-averages (first average the images of the same page and condition, then average over pages); n = number of pages; "
+                f"a by-page bootstrap 95% interval is given only for n ≥ {MIN_PAGES_FOR_CI}.", ""]
+        out += [f"| Condition \\ {column_label} (reference: {reference}) | " + " | ".join(columns) + " |",
                 "|" + "---|" * (len(columns) + 1)]
         for cond in conditions:
             out.append(f"| {cond} | " + " | ".join(_fmt_cell(cells[metric][cond][c]) for c in columns) + " |")
@@ -189,15 +189,15 @@ def _build(dataset: str, records: list[dict], header: dict) -> PublicResult:
     columns, conditions, cells = _aggregate(records)
     if dataset == "smartdoc_qa":
         reference = HUMAN
-        md = _render(f"SmartDoc-QA 评测(参照:{HUMAN})",
-                     "参照文本为数据集自带的人工转写,按其三类文档分组。不与其他参照来源的结果混比(ADR-0002)。",
-                     reference, "文档类别", columns, conditions, cells, header)
+        md = _render(f"SmartDoc-QA Evaluation (reference: {HUMAN})",
+                     "The reference text is the dataset's own human transcription, grouped by its three document classes. Not compared with results from other reference sources (ADR-0002).",
+                     reference, "Document class", columns, conditions, cells, header)
     else:
         reference = PSEUDO_GT
-        md = _render(f"RDD 评测(参照:{PSEUDO_GT})",
-                     "RDD 没有文本:参照为同一场景无损图的 OCR 结果(伪 ground truth)。"
-                     "CER 只反映相对改善量,不是真实准确率;不与其他参照来源的结果混比(ADR-0002)。",
-                     reference, "场景", columns, conditions, cells, header)
+        md = _render(f"RDD Evaluation (reference: {PSEUDO_GT})",
+                     "RDD has no text: the reference is the OCR result of the lossless image of the same scene (pseudo ground truth). "
+                     "CER reflects only the relative improvement, not true accuracy; not compared with results from other reference sources (ADR-0002).",
+                     reference, "Scene", columns, conditions, cells, header)
     return PublicResult(dataset, reference, header, records, columns, conditions, cells, md)
 
 

@@ -43,7 +43,7 @@ def test_no_interval_below_five_pages(cap, capsys):
     s = run(cap)
     assert cell(s, "blur", "paper")["n"] == 4
     assert cell(s, "blur", "paper")["ci"] is None
-    assert "n 太小" in (cap.out / "baseline_report.md").read_text(encoding="utf-8")
+    assert "n too small" in (cap.out / "baseline_report.md").read_text(encoding="utf-8")
 
 
 def test_interval_from_five_pages_is_reproducible(cap):
@@ -64,7 +64,7 @@ def test_micro_average_and_plot_are_produced(cap):
     assert s["micro"]["cer"]["blur"]["paper"]["n_images"] == 2
     assert (cap.out / "cer_by_page.png").read_bytes().startswith(b"\x89PNG")
     md = (cap.out / "baseline_report.md").read_text(encoding="utf-8")
-    assert "微平均" in md and "cer_by_page.png" in md
+    assert "Micro-Average" in md and "cer_by_page.png" in md
 
 
 def test_receipt_flagged_when_clean_cer_over_20_percent(cap, capsys):
@@ -284,7 +284,7 @@ def test_report_names_excluded_types_and_lists_their_gaps_separately(cap, capsys
     assert gaps["shadow"]["gap"] == pytest.approx(-0.4)
     assert gaps["blur"]["gap"] == pytest.approx(0.05)
     md = (cap.out / "baseline_report.md").read_text(encoding="utf-8")
-    assert "已排除" in md and "receipt" in md and "不参与" in md
+    assert "Excluded" in md and "receipt" in md and "not counted" in md
 
 
 def test_stage_exit_is_unchanged_when_no_type_is_flagged(cap, capsys):
@@ -295,7 +295,7 @@ def test_stage_exit_is_unchanged_when_no_type_is_flagged(cap, capsys):
     assert s["stage_exit"]["blur"]["n_pages"] == 2
     assert s["stage_exit"]["blur"]["gap"] == pytest.approx(0.27)
     assert "excluded" not in capsys.readouterr().out
-    assert "已排除" not in (cap.out / "baseline_report.md").read_text(encoding="utf-8")
+    assert "Excluded" not in (cap.out / "baseline_report.md").read_text(encoding="utf-8")
 
 
 def test_pilot_verdict_keeps_flagged_types_under_the_poor_baseline_rule(cap):
@@ -309,9 +309,9 @@ def test_few_judged_pages_get_a_sample_size_hint(cap, capsys):
     for p in (1, 2):
         cap.add_page(p, "paper", {"clean": [0.02], "blur": [0.3] * 3, "shadow": [0.3] * 3, "persp": [0.3] * 3})
     run(cap)
-    assert "样本不足" in (cap.out / "baseline_report.md").read_text(encoding="utf-8")
+    assert "Too few pages" in (cap.out / "baseline_report.md").read_text(encoding="utf-8")
     assert "few pages" in capsys.readouterr().out
 
     cap.add_page(3, "paper", {"clean": [0.02], "blur": [0.3] * 3, "shadow": [0.3] * 3, "persp": [0.3] * 3})
     run(cap)
-    assert "样本不足" not in (cap.out / "baseline_report.md").read_text(encoding="utf-8")
+    assert "Too few pages" not in (cap.out / "baseline_report.md").read_text(encoding="utf-8")

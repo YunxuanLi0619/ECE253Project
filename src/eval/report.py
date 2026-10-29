@@ -145,12 +145,12 @@ def _pct(x: float) -> str:
 def _fmt_cell(c: dict | None) -> str:
     if c is None:
         return "–"
-    ci = f" [{_pct(c['ci'][0])}, {_pct(c['ci'][1])}]" if c["ci"] else " n 太小"
-    return f"{_pct(c['mean'])}{ci} (n={c['n']}, 中位 {_pct(c['median'])})"
+    ci = f" [{_pct(c['ci'][0])}, {_pct(c['ci'][1])}]" if c["ci"] else " n too small"
+    return f"{_pct(c['mean'])}{ci} (n={c['n']}, median {_pct(c['median'])})"
 
 
 def _table(rows: dict, conds: list[str], cols: list[str], headers: dict[str, str], fmt) -> list[str]:
-    lines = ["| 条件 | " + " | ".join(headers[c] for c in cols) + " |", "|" + "---|" * (len(cols) + 1)]
+    lines = ["| Condition | " + " | ".join(headers[c] for c in cols) + " |", "|" + "---|" * (len(cols) + 1)]
     for cond in conds:
         lines.append(f"| {cond} | " + " | ".join(fmt(rows[cond][c]) for c in cols) + " |")
     return lines
@@ -160,15 +160,15 @@ def _verdict_lines(verdict: dict) -> list[str]:
     lines = []
     for cond, v in verdict.items():
         if v["status"] == "no data":
-            lines.append(f"- **{cond}**: 无数据(缺图或缺清晰基准)")
+            lines.append(f"- **{cond}**: no data (missing images or clean baseline)")
             continue
         lines.append(
-            f"- **{cond}**: {'达标' if v['passed'] else '未达标'} — CER 均值 {_pct(v['cond_mean'])},"
-            f"清晰基准 {_pct(v['clean_mean'])},高 {100 * v['gap']:.1f} 个百分点"
-            f"(需 ≥ {100 * PILOT_GAP:.1f});{v['n_above']}/{v['n_images']} 张图高于该页基准"
-            f"(需 ≥ {PILOT_FRACTION[0]}/{PILOT_FRACTION[1]})")
+            f"- **{cond}**: {'pass' if v['passed'] else 'fail'} — mean CER {_pct(v['cond_mean'])}, "
+            f"clean baseline {_pct(v['clean_mean'])}, {100 * v['gap']:.1f} points higher"
+            f" (need ≥ {100 * PILOT_GAP:.1f}); {v['n_above']}/{v['n_images']} images above the page baseline"
+            f" (need ≥ {PILOT_FRACTION[0]}/{PILOT_FRACTION[1]})")
         if not v["passed"]:
-            lines.append("  - 差距:" + describe_shortfall(v))
+            lines.append("  - Shortfall: " + describe_shortfall(v))
     return lines
 
 
@@ -181,8 +181,8 @@ def flagged_gap_lines(summary: dict) -> list[str]:
     """One line per flagged type: its CER gap over its own clean baseline, per defect."""
     lines = []
     for t, verdict in summary["flagged_verdicts"].items():
-        gaps = ", ".join(f"{c} {100 * v['gap']:+.1f} 个百分点" for c, v in verdict.items() if v["status"] != "no data")
-        lines.append(f"- {t}(清晰基准 {_pct(summary['clean_cer_by_type'][t])}):{gaps or '无数据'}")
+        gaps = ", ".join(f"{c} {100 * v['gap']:+.1f} points" for c, v in verdict.items() if v["status"] != "no data")
+        lines.append(f"- {t} (clean baseline {_pct(summary['clean_cer_by_type'][t])}): {gaps or 'no data'}")
     return lines
 
 
@@ -190,50 +190,50 @@ def describe_shortfall(v: dict) -> str:
     """What a failing condition lacks, in plain words."""
     parts = []
     if v["gap"] < PILOT_GAP - EPS:
-        parts.append(f"均值差还差 {100 * v['gap_shortfall']:.1f} 个百分点")
+        parts.append(f"mean gap short by {100 * v['gap_shortfall']:.1f} points")
     num, den = PILOT_FRACTION
     if v["n_above"] * den < num * v["n_images"]:
-        parts.append(f"高于基准的图只有 {v['n_above']}/{v['n_images']},需 ≥ {num}/{den}")
-    return ";".join(parts)
+        parts.append(f"only {v['n_above']}/{v['n_images']} images above the baseline, need ≥ {num}/{den}")
+    return "; ".join(parts)
 
 
 def render_markdown(summary: dict, header: dict, plot_name: str) -> str:
     types, conds, flagged = summary["doc_types"], summary["conditions"], summary["flagged_types"]
     cols = types + [OVERALL]
     headers = {t: f"{t} ⚠" if t in flagged else t for t in types}
-    headers[OVERALL] = "合计(不含 ⚠ 类型)" if flagged else "合计"
-    out = ["# P0 基线报告", "", "## 评测配置", ""]
+    headers[OVERALL] = "Overall (excl. ⚠ types)" if flagged else "Overall"
+    out = ["# P0 Baseline Report", "", "## Evaluation Configuration", ""]
     out += [f"- {k}: {json_value}" for k, json_value in header.items()]
-    out += ["", "## 主表:条件 × 文档类型(CER)", "",
-            "格内为页层宏平均(先对同页同条件的图取均值,再对页取均值);n = 页数;"
-            f"n ≥ {MIN_PAGES_FOR_CI} 才给按页自助法 95% 区间。", ""]
+    out += ["", "## Main Table: Condition × Document Type (CER)", "",
+            "Cells are page-level macro-averages (first average the images of the same page and condition, then average over pages); n = number of pages; "
+            f"a by-page bootstrap 95% interval is given only for n ≥ {MIN_PAGES_FOR_CI}.", ""]
     out += _table(summary["cells"]["cer"], conds, cols, headers, _fmt_cell)
     if flagged:
-        out += ["", "⚠ 清晰基准 CER 超过 20% 的类型(单独讨论,不并入合计):"
-                + ",".join(f"{t}({_pct(summary['clean_cer_by_type'][t])})" for t in flagged)]
-    out += ["", "## 主表:条件 × 文档类型(WER)", ""]
+        out += ["", "⚠ Types with clean-baseline CER above 20% (discussed separately, not folded into Overall): "
+                + ", ".join(f"{t}({_pct(summary['clean_cer_by_type'][t])})" for t in flagged)]
+    out += ["", "## Main Table: Condition × Document Type (WER)", ""]
     out += _table(summary["cells"]["wer"], conds, cols, headers, _fmt_cell)
-    out += ["", f"## 每页 CER 分布", "", f"![每页 CER 分布]({plot_name})", ""]
+    out += ["", "## Per-Page CER Distribution", "", f"![Per-page CER distribution]({plot_name})", ""]
     if summary["pilot"] is not None:
         passed = all(v["passed"] for v in summary["pilot"].values())
-        out += ["## 试拍判定", "", f"**{'全部达标' if passed else '有条件未达标,需补拍'}**", ""]
+        out += ["## Pilot Verdict", "", f"**{'All conditions pass' if passed else 'Some conditions fail, reshoot needed'}**", ""]
         out += _verdict_lines(summary["pilot"]) + [""]
     exit_ok = all(v["passed"] for v in summary["stage_exit"].values())
-    scope = "对未被 ⚠ 排除的页" if flagged else "对全部页"
-    out += ["## 阶段退出状态", "",
-            f"模糊、阴影、透视是否都明显高于清晰基准(同试拍判定规则,{scope}):**{'是' if exit_ok else '否'}**", ""]
+    scope = "over pages not excluded as ⚠" if flagged else "over all pages"
+    out += ["## Stage Exit Status", "",
+            f"Are blur, shadow and perspective all clearly above the clean baseline (same rule as the pilot verdict, {scope}): **{'yes' if exit_ok else 'no'}**", ""]
     out += _verdict_lines(summary["stage_exit"]) + [""]
     if summary["few_page_conditions"]:
-        out += [f"样本不足:{'、'.join(summary['few_page_conditions'])} 参与判定的页少于 {MIN_PAGES_FOR_VERDICT},"
-                "结论仅供参考。", ""]
+        out += [f"Too few pages: {', '.join(summary['few_page_conditions'])} judged on fewer than {MIN_PAGES_FOR_VERDICT} pages, "
+                "verdict for reference only.", ""]
     if flagged:
-        out += [f"已排除 ⚠ 类型:{'、'.join(flagged)}(清晰基准 CER 超过 {100 * POOR_BASELINE_CER:.0f}%)。"
-                "下列为各缺陷相对其清晰基准的 CER 差,仅供单独讨论,不参与是否达标的结论:", ""]
+        out += [f"Excluded ⚠ types: {', '.join(flagged)} (clean-baseline CER above {100 * POOR_BASELINE_CER:.0f}%). "
+                "Below is each defect's CER gap to its clean baseline, for separate discussion only and not counted in the pass/fail verdict:", ""]
         out += flagged_gap_lines(summary) + [""]
-    out += ["## 附表:微平均(总错误数 / 总字数或词数)", ""]
+    out += ["## Appendix: Micro-Average (total errors / total characters or words)", ""]
     for metric in METRICS:
         out += [f"### {metric.upper()}", ""]
         out += _table(summary["micro"][metric], conds, cols, headers,
-                      lambda m: "–" if m is None else f"{_pct(m['value'])} (图 {m['n_images']})")
+                      lambda m: "–" if m is None else f"{_pct(m['value'])} ({m['n_images']} images)")
         out += [""]
     return "\n".join(out)

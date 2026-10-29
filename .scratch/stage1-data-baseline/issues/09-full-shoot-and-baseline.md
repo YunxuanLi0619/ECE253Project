@@ -1,19 +1,19 @@
-# 09: 完成 360 张拍摄并产出正式基线
+# 09: Finish shooting 360 images and produce the formal baseline
 
-**What to build:** 人工工作加一次运行。试拍达标后拍完剩下所有页(共 36 页 432 张,含已保留的试拍图),CSV 补全,全部放进 `data/raw/`。跑 `validate` 直到 0 错误;对全部 36 页跑 `report`,输出写进 `results/stage1-baseline/`。检查三种缺陷的 CER 都明显高于清晰基准(05 修复后的退出状态为通过);差别很小的条件只重拍该条件。保存报告后,把 `p0_results.json` 视为只读的原始数据,不再手改数字。
+**What to build:** Manual work plus one run. After the pilot passes, shoot all remaining pages (36 pages, 432 images in total, including the retained pilot images), complete the CSV, and put everything in `data/raw/`. Run `validate` until 0 errors; run `report` on all 36 pages and write the output to `results/stage1-baseline/`. Check that the CER of all three defects is clearly above the clean baseline (the exit status passes after the 05 fix); for conditions with only a small difference, reshoot only that condition. After saving the report, treat `p0_results.json` as read-only raw data and no longer edit the numbers by hand.
 
 **Blocked by:** 05, 08
 
 **Status:** ready-for-human
 
-- [ ] 36 页全部拍完,每页 12 张,命名与 CSV 一一对应
-- [ ] `validate` 0 错误;警告(文字层过短、表格读序)已逐条处理
-- [ ] `report` 输出在 `results/stage1-baseline/`:`p0_results.json`、`baseline_report.md`、`baseline_summary.json`、`cer_by_page.png`
-- [ ] 阶段退出状态:blur、shadow、persp 均达标;若不达标,已重拍该条件并重新跑
-- [ ] 清晰基准 CER > 20% 的类型已在报告中单独讨论
-- [ ] 后续评测只报测试集(24 页),本次基线报全部 36 页
+- [ ] All 36 pages shot, 12 images per page, with names corresponding one-to-one with the CSV
+- [ ] `validate` has 0 errors; warnings (short text layer, table reading order) are handled one by one
+- [ ] `report` output is in `results/stage1-baseline/`: `p0_results.json`, `baseline_report.md`, `baseline_summary.json`, `cer_by_page.png`
+- [ ] Stage exit status: blur, shadow and persp all pass; if not, that condition has been reshot and rerun
+- [ ] Types with clean-baseline CER > 20% are discussed separately in the report
+- [ ] Later evaluations report only the test set (24 pages); this baseline reports all 36 pages
 
 ## Comments
 
-- 对应阶段 1 的三项交付物与完成标准:约 360 张自采图、元数据 CSV、各条件下的基线 CER。
-- 完成后即可宣布阶段 1 的自采部分完成;公开数据集部分见 10、11。
+- Corresponds to the three deliverables and the completion criteria of stage 1: about 360 self-collected images, the metadata CSV, and the baseline CER for each condition.
+- When done, the self-collected part of stage 1 can be declared complete; for the public-dataset part see 10 and 11.

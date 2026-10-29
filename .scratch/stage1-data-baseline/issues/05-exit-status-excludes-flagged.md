@@ -1,22 +1,22 @@
-# 05: 阶段退出判定与主表口径对齐(排除 ⚠ 类型)
+# 05: Align the stage exit verdict with the main table convention (exclude ⚠ types)
 
-**What to build:** 现在 `report` 的主表「合计」不含清晰基准 CER > 20% 的 ⚠ 类型(如小票),但阶段退出状态却对"全部页"计算。演练(36 页模拟数据,小票页清晰 CER 384%)里,小票把 shadow 的均值差拉到 +3.0 个百分点,误判 FAIL;去掉小票后 shadow 高出清晰基准 40 多个百分点。改为:阶段退出状态只对非 ⚠ 类型的页计算(试拍判定不变,见评论);⚠ 类型另起一行单独列出各条件相对清晰基准的差,供单独讨论,不参与是否达标的结论。报告里写明本次排除了哪些类型。
+**What to build:** Currently the "Overall" column of the `report` main table excludes ⚠ types whose clean-baseline CER > 20% (such as receipts), but the stage exit status is computed over "all pages". In a rehearsal (36 pages of simulated data, receipt pages with clean CER 384%), the receipts pulled the mean gap of shadow down to +3.0 percentage points and caused a wrong FAIL; without the receipts, shadow is more than 40 percentage points above the clean baseline. Change it so that: the stage exit status is computed only over pages of non-⚠ types (the pilot verdict is unchanged, see the comments); ⚠ types get their own line listing each condition's gap to its clean baseline for separate discussion, without taking part in the pass/fail conclusion. The report states which types were excluded this time.
 
 **Blocked by:** 03
 
 **Status:** done (pending review)
 
-- [x] 构造数据:某类型清晰 CER > 20% 且拖低均值差时,阶段退出状态不再因它而 FAIL
-- [x] 报告写明被排除的类型,并单独列出这些类型的各条件 CER 与清晰基准之差
-- [x] 没有 ⚠ 类型时,结果与现在完全一致(回归)
-- [x] 若排除后某缺陷的有效页过少(例如 < 3 页),在报告中提示"样本不足,判定仅供参考"
-- [x] 测试只经命令行入口,用 `--precomputed` 构造 CER
+- [x] Crafted data: when a type has clean CER > 20% and drags down the mean gap, the stage exit status no longer FAILs because of it
+- [x] The report states the excluded types and separately lists the gap of each condition's CER to the clean baseline for these types
+- [x] When there are no ⚠ types, the result is exactly the same as now (regression)
+- [x] If a defect has too few effective pages after exclusion (e.g. < 3 pages), the report notes "too few pages, verdict for reference only"
+- [x] Tests go only through the command-line entry point, using `--precomputed` to craft CERs
 
 ## Comments
 
-- 来源:2026-10-02 用本机论文 PDF 造的 36 页 432 张模拟图跑 `report` 时发现(见对话),判定口径与主表不一致。
-- 待你确认:规格 story 26 只说"小票单独讨论,不并入合计",没明说是否也排除出退出判定;本工单按"一并排除"写,如不同意改回。
-- 实现:`src/eval/report.py`(`build_summary` 只对非 ⚠ 类型算 `stage_exit`;新增 `flagged_verdicts`、`few_page_conditions`、`MIN_PAGES_FOR_VERDICT = 3`)、`src/eval/cli.py`(标题改为 "excluding flagged types",并打印被排除类型的差距与样本不足提示);测试在 `tests/test_report.py` 末尾 5 条,只经命令行。
-- **与工单原文不同的一点**:原文写"阶段退出状态和试拍判定都排除 ⚠ 类型",实现时只对阶段退出状态排除。原因:规格 story 27 为"基准本身就差的页"专门设了 ≥ 1.5 倍规则,试拍判定本来就在照顾这类页,排除后试拍里的小票页会被整个丢掉(已有测试 `test_poor_baseline_page_needs_one_and_a_half_times` 因此失败)。试拍判定行为保持原样。
-- 被排除类型的差距另行列出(报告 "已排除 ⚠ 类型" 段与终端输出),不参与是否达标。
-- 当前目录不是 git 仓库,所以没有提交,也没有跑基于 diff 的 /code-review。
+- Source: found on 2026-10-02 when running `report` on 36 pages / 432 simulated images made from a local paper PDF (see the conversation); the verdict convention was inconsistent with the main table.
+- To be confirmed by you: story 26 of the spec only says receipts are discussed separately and not folded into the totals, and does not say whether they are also excluded from the exit verdict; this ticket was written as "exclude them too", change it back if you disagree.
+- Implementation: `src/eval/report.py` (`build_summary` computes `stage_exit` only over non-⚠ types; added `flagged_verdicts`, `few_page_conditions`, `MIN_PAGES_FOR_VERDICT = 3`), `src/eval/cli.py` (the title changed to "excluding flagged types", and it prints the gaps of the excluded types and the too-few-pages note); the 5 tests at the end of `tests/test_report.py` go through the command line only.
+- **One difference from the original ticket text**: the original said "both the stage exit status and the pilot verdict exclude ⚠ types", but the implementation excludes them only from the stage exit status. Reason: story 27 of the spec has a dedicated ≥ 1.5× rule for "pages whose baseline is already poor", so the pilot verdict already accommodates such pages; excluding them would drop the receipt pages from the pilot entirely (the existing test `test_poor_baseline_page_needs_one_and_a_half_times` fails because of this). The pilot verdict behavior stays as it was.
+- The gaps of the excluded types are listed separately (the "Excluded ⚠ types" section of the report and the terminal output) and do not take part in the pass/fail.
+- The current directory is not a git repository, so nothing was committed and the diff-based /code-review was not run.

@@ -1,23 +1,23 @@
-# 03: P0 基线跑分、报告与试拍判定
+# 03: P0 baseline scoring, report and pilot verdict
 
-**What to build:** 命令行入口对全部图用固定 Tesseract 配置(ADR-0001)跑 P0 评测,每张图的 CER/WER 作为原始数据保存,结果文件头记录 tesseract 版本、PSM/OEM 和归一化版本;未变的图不重复跑 OCR。再据此输出基线报告:「条件 × 文档类型」表,格内先对同页同条件取均值再对页取均值,标 n 和中位数,n ≥ 5 才给按页自助法 95% 区间,否则写"n 太小";微平均放附表;画每页 CER 分布图;清晰基准 CER 超过 20% 的类型(如小票)加标记。同时给出试拍判定:某条件 CER 均值比清晰基准高 ≥ 5 个百分点且 ≥ 2/3 的图高于该页基准(基准本身就差的页改看 ≥ 1.5 倍),指出哪个条件未达标及差多少;并汇报模糊、阴影、透视是否都明显高于清晰基准(阶段退出状态)。
+**What to build:** The command-line entry point runs the P0 evaluation on all images with the fixed Tesseract configuration (ADR-0001), saves each image's CER/WER as raw data, and records the tesseract version, PSM/OEM and normalization version in the result file header; unchanged images do not rerun OCR. It then outputs the baseline report from these: a "condition × document type" table whose cells first average within the same page and condition and then over pages, showing n and the median, giving a by-page bootstrap 95% interval only for n ≥ 5 and otherwise writing "n too small"; micro-averages in an appendix table; a per-page CER distribution plot; types whose clean-baseline CER exceeds 20% (such as receipts) get a flag. It also gives the pilot verdict: a condition passes if its mean CER is ≥ 5 percentage points above the clean baseline and ≥ 2/3 of its images are above the page's baseline (for pages whose baseline is already poor, look at ≥ 1.5× instead), pointing out which condition failed and by how much; and it reports whether blur, shadow and perspective are all clearly above the clean baseline (the stage exit status).
 
 **Blocked by:** 01
 
 **Status:** ready-for-agent
 
-- [x] 结果文件头含 tesseract 版本、PSM/OEM、归一化版本
-- [x] 再次运行只对新增或变化的图调用 OCR
-- [x] 格内数值按页层均值计算,并显示 n 与中位数;n < 5 不给区间
-- [x] 微平均附表与每页分布图生成
-- [x] 清晰基准 CER > 20% 的类型被标记
-- [x] 试拍判定对构造的 CER 分别给出通过与失败,并说明失败条件及差距
-- [x] 测试经命令行入口,OCR 结果可替换为预先算好的数;另有一条用现有 smoke PDF 的真 Tesseract 冒烟测试
+- [x] The result file header contains the tesseract version, PSM/OEM and normalization version
+- [x] A rerun calls OCR only for new or changed images
+- [x] Cell values are computed as page-level means and show n and the median; no interval for n < 5
+- [x] The micro-average appendix table and the per-page distribution plot are generated
+- [x] Types with clean-baseline CER > 20% are flagged
+- [x] The pilot verdict gives pass and fail on crafted CERs and explains the failing condition and the gap
+- [x] Tests go through the command-line entry point, with OCR results replaceable by precomputed numbers; plus one smoke test with real Tesseract on the existing smoke PDF
 
 ## Comments
 
-实现完成(`python -m eval.cli report --csv … --images … --pdfs … --out …`,代码在 `src/eval/{baseline,report,plot,cli}.py`,测试 `tests/test_report.py`)。判定细则的取舍:
-- 「基准本身就差」= 该页清晰 CER > 20%(与小票标记阈值一致);只改变逐图判据(≥ 1.5 倍),均值差仍按 ≥ 5 个百分点。
-- 阶段退出状态用同一条判定规则,对全部页计算。
-- `--precomputed FILE`(filename → {cer, wer})可替换 OCR;此模式不写 `p0_results.json`。
-- Tesseract 不读 EXIF 方向,OCR 前对带方向标记的图转正(临时副本,原图不动)。
+Implementation done (`python -m eval.cli report --csv … --images … --pdfs … --out …`, code in `src/eval/{baseline,report,plot,cli}.py`, tests in `tests/test_report.py`). Trade-offs in the verdict details:
+- "Baseline already poor" = the page's clean CER > 20% (the same threshold as the receipt flag); this changes only the per-image criterion (≥ 1.5×), the mean gap is still ≥ 5 percentage points.
+- The stage exit status uses the same verdict rule, computed over all pages.
+- `--precomputed FILE` (filename → {cer, wer}) can replace OCR; this mode does not write `p0_results.json`.
+- Tesseract does not read the EXIF orientation, so images carrying an orientation tag are rotated upright before OCR (a temporary copy; the original is untouched).

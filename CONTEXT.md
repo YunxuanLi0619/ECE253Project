@@ -1,89 +1,89 @@
-# 手机拍摄文档的 OCR 预处理
+# OCR Preprocessing for Phone-Captured Documents
 
-研究手机随手拍的文档为什么 OCR 识别不准,并用图像处理方法对三种缺陷做预处理,衡量识别错误率降低多少,最后研究三种缺陷叠加时预处理的顺序。
+We study why casually phone-photographed documents are recognized poorly by OCR, apply image-processing methods to preprocess three kinds of defects, measure how much the recognition error rate drops, and finally study the preprocessing order when all three defects are stacked.
 
 ## Language
 
-### 缺陷与拍摄
+### Defects and capture
 
-**缺陷**:
-拍摄中导致 OCR 变差的现象,本项目只研究三种:运动模糊、阴影、透视畸变。
-_Avoid_: 退化(指现象时)、问题
+**Defect**:
+A phenomenon during capture that makes OCR worse. This project studies only three: motion blur, shadow, perspective distortion.
+_Avoid_: degradation (when referring to the phenomenon), problem
 
-**退化模型**:
-对某种缺陷的数学描述(如 g = h * f + n、I = L × R、单应变换)。
-_Avoid_: 缺陷模型
+**Degradation model**:
+A mathematical description of one defect (e.g. g = h * f + n, I = L × R, a homography).
+_Avoid_: defect model
 
-**拍摄条件**:
-拍摄协议里的类别,共 5 种:清晰、模糊、阴影、透视、叠加。每页共 12 张(1+3+3+3+2)。
-_Avoid_: 四种条件、场景
+**Capture condition**:
+A category in the capture protocol, 5 in total: clean, blur, shadow, perspective, combo. 12 shots per page (1+3+3+3+2).
+_Avoid_: four conditions, scenario
 
-**清晰基准**:
-每页实拍的那 1 张平放、光线均匀的参照图。
-_Avoid_: clean 图、原图
+**Clean baseline**:
+The 1 real shot per page, taken flat and under even lighting, used as the reference.
+_Avoid_: clean image, original image
 
-**数字原图**:
-由 PDF 渲染出的图,是合成数据的起点,也是 PSNR/SSIM 的参照。
-_Avoid_: 清晰基准(两者不是同一个东西)
+**Digital original**:
+The image rendered from the PDF; the starting point for synthetic data and the reference for PSNR/SSIM.
+_Avoid_: clean baseline (the two are not the same thing)
 
-**叠加组**:
-实拍的叠加条件图,同时带有倾斜、阴影和运动模糊(每页 2 张)。
-_Avoid_: 合成叠加
+**Combo set**:
+The real shots of the combo condition, carrying tilt, shadow and motion blur at the same time (2 per page).
+_Avoid_: synthetic combo
 
-**合成叠加**:
-由数字原图按成像顺序(先阴影、再透视、最后模糊)合成的叠加图,各环节参数已知。
-_Avoid_: 叠加组
+**Synthetic combo**:
+A combo image synthesized from the digital original in imaging order (shadow first, then perspective, finally blur), with every stage's parameters known.
+_Avoid_: combo set
 
-### 数据
+### Data
 
-**页**:
-自采数据的一个文档页,是数据划分的最小单位:同一页的图只能在调参集或测试集之一。
-_Avoid_: 文档(文档指一类,如论文页、小票)
+**Page**:
+One document page of the self-collected data and the smallest unit of the data split: all images of the same page go to either the tuning set or the test set.
+_Avoid_: document (document refers to a class, such as paper page or receipt)
 
 **ground truth**:
-从有文字层的 PDF 里直接提取的原文本,经归一化后用作 CER/WER 的参照。
-_Avoid_: 标注、手标文本
+The original text extracted directly from a PDF with a text layer and, after normalization, used as the reference for CER/WER.
+_Avoid_: annotation, hand-labeled text
 
-**试拍批**:
-正式拍摄前先拍的小批图,用来检验缺陷是否足够拖累 OCR。达标则保留并计入正式数据,元数据里标记为试拍。
+**Pilot batch**:
+A small batch shot before the formal shoot to check whether the defects hurt OCR enough. If it passes, it is kept and counted in the formal data, marked as pilot in the metadata.
 
-**伪 ground truth**:
-没有文字层可提取时,对同一场景无损的那张图跑 OCR 得到的参照文本。用它算出的 CER 只反映相对改善,不是真实准确率,必须单独成表。
-_Avoid_: ground truth(两者不可混称)
+**Pseudo ground truth**:
+When no text layer can be extracted, the reference text obtained by running OCR on the lossless image of the same scene. The CER computed from it reflects only relative improvement, not true accuracy, and must go in its own table.
+_Avoid_: ground truth (the two must not be called by the same name)
 
-**人工转写**:
-公开数据集(SmartDoc-QA)自带的人工转写文本,同样过归一化后作参照,但 CER 单独成表,不与自采数据的 CER 放在一张表里比较。
+**Human transcription**:
+The human-transcribed text that ships with a public dataset (SmartDoc-QA). It is normalized the same way and used as the reference, but its CER goes in a separate table and is not compared with the CER of the self-collected data in one table.
 
-**调参集 / 测试集**:
-按页划分,约三分之一的页用来调参,其余用于最终测试。
+**Tuning set / Test set**:
+Split by page: about one third of the pages are used for tuning, the rest for the final test.
 
-### 方法与实验
+### Methods and experiments
 
-**处理方案**:
-三种预处理的执行顺序编号,共 7 个。**P0** 为基线(不处理);**P1–P6** 为顺序方案,是去模糊、去阴影、矫正三步的 3! 种排列。P1 是假设最优的顺序(去模糊 → 矫正 → 去阴影)。
-_Avoid_: 顺序组、P0 顺序
+**Processing scheme**:
+The numbered execution order of the three preprocessing steps, 7 in total. **P0** is the baseline (no processing); **P1–P6** are the order schemes, the 3! permutations of the deblur, deshadow and rectify steps. P1 is the order assumed to be optimal (deblur → rectify → deshadow).
+_Avoid_: order group, P0 order
 
-**主方法 / 对照方法**:
-每种缺陷下的两个传统方法:主方法(如 Wiener、背景除法+Sauvola、轮廓角点+单应)与对照方法(如 Richardson-Lucy、同态滤波/Retinex、Hough+RANSAC)。AI 方法只作可选参考线。
+**Primary method / Comparison method**:
+The two traditional methods for each defect: the primary method (e.g. Wiener, background division + Sauvola, contour corners + homography) and the comparison method (e.g. Richardson-Lucy, homomorphic filtering / Retinex, Hough + RANSAC). AI methods serve only as optional reference lines.
 
-**改进版**:
-针对自采数据对主方法做的自适应修改,与原版对比。
-_Avoid_: 优化版
+**Improved version**:
+An adaptive modification of the primary method made for the self-collected data, compared against the original.
+_Avoid_: optimized version
 
-### 评测
+### Evaluation
 
 **CER**:
-字符错误率,(S + D + I) / N。S、D、I 为替换、删除、插入的字符数,N 为 ground truth 的字符数。
-_Avoid_: 字错率
+Character error rate, (S + D + I) / N. S, D, I are the numbers of substituted, deleted and inserted characters; N is the number of characters in the ground truth.
+_Avoid_: character-wrong rate
 
 **WER**:
-词错误率,算法同 CER,单位为词。
+Word error rate; same algorithm as CER, with words as the unit.
 
 **PSNR / SSIM**:
-复原图质量的辅助指标,只在合成数据上算,因为实拍图与清晰基准不逐像素对齐。
+Auxiliary metrics of restored-image quality, computed only on synthetic data, because the real shots are not pixel-aligned with the clean baseline.
 
-**角点检测成功率**:
-透视矫正中,文档四个角点被找对的比例。
+**Corner-detection success rate**:
+In perspective rectification, the fraction of documents whose four corners are found correctly.
 
 **PSM / OEM**:
-Tesseract 的页面分割模式与识别引擎模式。全程固定,取值见 ADR-0001。
+Tesseract's page segmentation mode and OCR engine mode. Both are fixed throughout; see ADR-0001 for the values.

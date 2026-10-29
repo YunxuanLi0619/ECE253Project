@@ -1,38 +1,38 @@
-# 公开数据集核对清单
+# Public Dataset Checklist
 
-按 ADR-0002,公开数据集的结果按参照来源各自成表(`python -m eval.cli public`)。信息核对于 2026-10-01(Zenodo / GitHub 页面);**下载前的人工待办见文末,尚未完成。**
+Per ADR-0002, results on public datasets get one table per reference source (`python -m eval.cli public`). Information checked on 2026-10-01 (Zenodo / GitHub pages); **the manual to-dos before downloading are at the end and are not yet done.**
 
 | | SmartDoc-QA | SmartDoc 2015 Ch.1 sample | RDD |
 |---|---|---|---|
-| URL | https://zenodo.org/record/5293201 | https://zenodo.org/records/1230218 | https://github.com/hyyh1314/RDD(数据在其 README 给出的 [Google Drive 文件夹](https://drive.google.com/drive/folders/1nS-p9qKCsFjOFyzq5q2m-Dq-PJVmLfNc?usp=sharing)) |
-| 下载方式 | Zenodo 直接下载 `Dataset SmartDoc-QA.zip`,只解出需要的子集 | Zenodo 下载 `sampleDataset.tar.gz`(不要 `testDataset.tar.gz`) | Google Drive 下载,只取测试部分即可 |
-| 体量 | 13.7 GB(约 4260 张图,30 个文档页) | 21.2 MB(sample);test 包 1.5 GB 不下 | 4914 对(训练 4371 / 测试 545);容量页面未写 |
-| 许可 | CC BY 4.0 | CC BY 4.0 | **未声明**(README 无许可条款) |
-| 引用 | Nayef, Luqman, Prum, Eskenazi, Chazalon, Ogier. *SmartDoc-QA: A Dataset for Quality Assessment of Smartphone Captured Document Images – Single and Multiple Distortions.* CBDAR 2015 | Burie et al. *ICDAR2015 Competition on Smartphone Document Capture and OCR (SmartDoc).* ICDAR 2015;数据集:Chazalon & Rusiñol, Zenodo, doi:10.5281/zenodo.1230218 | Zhang, He, Zhang, Liu, Zhang, Xiao. *Document Image Shadow Removal Guided by Color-Aware Background.* CVPR 2023 |
-| 是否带文本 | **是**:人工转写文本,另有数据集自带 OCR 结果和拍摄参数 | 否:只有文档四边形标注 | 否:只有「有阴影 / 无阴影」配对图 |
-| 参照来源 | 人工转写 | —(不算 CER) | 伪 ground truth(同场景无阴影图的 OCR) |
-| 用途 | 模糊 / 光照 / 透视各取一部分,按其三类文档(modern documents、old administrative letters、receipts)分组,报 CER/WER | 只测透视矫正的**角点检测成功率** | 阴影去除的相对改善(只看相对量,不当作真实准确率) |
-| 结果表 | `public_smartdoc_qa.md`,表头「参照:人工转写」 | 不在 `public` 命令范围内(阶段 3 的角点评测) | `public_rdd.md`,表头「参照:伪 ground truth,仅相对改善」 |
+| URL | https://zenodo.org/record/5293201 | https://zenodo.org/records/1230218 | https://github.com/hyyh1314/RDD (data is in the [Google Drive folder](https://drive.google.com/drive/folders/1nS-p9qKCsFjOFyzq5q2m-Dq-PJVmLfNc?usp=sharing) given in its README) |
+| How to download | Direct download of `Dataset SmartDoc-QA.zip` from Zenodo; extract only the needed subset | Download `sampleDataset.tar.gz` from Zenodo (not `testDataset.tar.gz`) | Download from Google Drive; the test part is enough |
+| Size | 13.7 GB (about 4260 images, 30 document pages) | 21.2 MB (sample); the 1.5 GB test package is not downloaded | 4914 pairs (4371 train / 545 test); size not stated on the page |
+| License | CC BY 4.0 | CC BY 4.0 | **Not stated** (no license terms in the README) |
+| Citation | Nayef, Luqman, Prum, Eskenazi, Chazalon, Ogier. *SmartDoc-QA: A Dataset for Quality Assessment of Smartphone Captured Document Images – Single and Multiple Distortions.* CBDAR 2015 | Burie et al. *ICDAR2015 Competition on Smartphone Document Capture and OCR (SmartDoc).* ICDAR 2015; dataset: Chazalon & Rusiñol, Zenodo, doi:10.5281/zenodo.1230218 | Zhang, He, Zhang, Liu, Zhang, Xiao. *Document Image Shadow Removal Guided by Color-Aware Background.* CVPR 2023 |
+| Has text? | **Yes**: human-transcribed text, plus the dataset's own OCR results and capture parameters | No: only document-quadrilateral annotations | No: only paired "with shadow / without shadow" images |
+| Reference source | Human transcription | — (no CER computed) | Pseudo ground truth (OCR of the same scene's shadow-free image) |
+| Used for | A portion each of blur / lighting / perspective, grouped by its three document classes (modern documents, old administrative letters, receipts); report CER/WER | Only the **corner-detection success rate** of perspective rectification | Relative improvement of shadow removal (relative only, not treated as true accuracy) |
+| Result table | `public_smartdoc_qa.md`, header "reference: human transcription" | Not covered by the `public` command (the corner evaluation of stage 3) | `public_rdd.md`, header "reference: pseudo ground truth, relative improvement only" |
 
-DocUNet、Hradiš 暂不使用;真实模糊文档没有合适公开集,用自采 + 合成模糊代替。
+DocUNet and Hradiš are not used for now; there is no suitable public set of real blurred documents, so self-collected + synthetic blur is used instead.
 
-## 下载前的人工待办
+## Manual to-dos before downloading
 
-- [ ] **向 SmartDoc 作者告知用途**:写信给 icdar.smartdoc@gmail.com(地址来自阶段 1 决定清单,作者请求使用者告知),说明是课程项目(ECE 253),用于手机拍摄文档的 OCR 预处理评测,并附上上表「用途」一行。Zenodo 页面另要求按 CC BY 注明出处。
-- [ ] **对照原始页面复核许可**:本表的许可来自 Zenodo / GitHub 页面的摘要,下载前再打开 Zenodo 5293201、Zenodo 1230218 逐项确认(含是否有附加条款)。
-- [ ] **RDD 许可未声明**:下载前在 GitHub 仓库开 issue 或联系作者确认可否用于课程项目;确认前只做课内评测,不再分发图片。
-- [ ] 核对 SmartDoc-QA 的 Zenodo 页面所列 DOI(10.1109/ICDAR.2015.7333960)与 CBDAR 论文是否对应,引用以原始页面为准。
-- [ ] 官方站点 smartdoc.univ-lr.fr 的 HTTPS 证书不匹配(2026-10-01 访问报错),作者联系方式与数据集说明请在官方页面或 Zenodo 上再核一次。
-- [ ] 报告里引用以上三个数据集的论文,并注明 SmartDoc-QA 只用了子集。
+- [ ] **Tell the SmartDoc authors about the intended use**: email icdar.smartdoc@gmail.com (address from the stage 1 decisions list; the authors ask users to notify them), stating that this is a course project (ECE 253) evaluating OCR preprocessing for phone-captured documents, and attach the "Used for" row of the table above. The Zenodo page also requires attribution under CC BY.
+- [ ] **Re-verify the licenses against the original pages**: the licenses in this table come from the summaries on the Zenodo / GitHub pages; before downloading, open Zenodo 5293201 and Zenodo 1230218 again and confirm each item (including any additional terms).
+- [ ] **RDD license is not stated**: before downloading, open an issue in the GitHub repository or contact the authors to confirm that it may be used for a course project; until confirmed, use it only for in-course evaluation and do not redistribute the images.
+- [ ] Check that the DOI listed on the SmartDoc-QA Zenodo page (10.1109/ICDAR.2015.7333960) corresponds to the CBDAR paper; cite according to the original page.
+- [ ] The HTTPS certificate of the official site smartdoc.univ-lr.fr does not match (error when visited on 2026-10-01); re-check the authors' contact details and the dataset description on the official page or on Zenodo.
+- [ ] Cite the papers of the three datasets above in the report, and state that only a subset of SmartDoc-QA was used.
 
-## 放进 `public` 命令的目录格式
+## Directory format for the `public` command
 
 ```
-<root>/smartdoc_qa/manifest.csv   列:filename, page_id, doc_class, distortion, reference
+<root>/smartdoc_qa/manifest.csv   columns: filename, page_id, doc_class, distortion, reference
                   images/<filename>
-                  transcriptions/<reference>     # 该页的人工转写文本
-<root>/rdd/manifest.csv           列:filename, page_id, condition  (clean | shadow;page_id 是场景号)
+                  transcriptions/<reference>     # human-transcribed text of that page
+<root>/rdd/manifest.csv           columns: filename, page_id, condition  (clean | shadow; page_id is the scene number)
           images/<filename>
 ```
 
-`python -m eval.cli public --root <root> --out <out>` 为每个存在的数据集各写一份 `public_<数据集>.md/.json`;`--ocr-texts FILE`(`<数据集>/<文件名>` → OCR 原文)可替换 OCR。manifest 要按下载的子集自行整理(各数据集原始目录结构未核对,尚未与此格式对齐)。
+`python -m eval.cli public --root <root> --out <out>` writes one `public_<dataset>.md/.json` for each dataset that exists; `--ocr-texts FILE` (`<dataset>/<filename>` → raw OCR text) can replace the OCR. The manifest has to be put together by hand from the downloaded subset (the original directory structure of each dataset has not been checked and has not yet been aligned with this format).

@@ -1,19 +1,19 @@
-# 08: 试拍批拍摄与试拍判定
+# 08: Pilot batch shoot and pilot verdict
 
-**What to build:** 人工工作。页清单定下后先用 06 生成 CSV 骨架并用 02 做划分。从调参集里挑 2~3 页(建议论文、书页、表格各一),按协议每页拍 12 张,把 CSV 里这些页的 `pilot` 标为 true,补全 light、captured_at 等字段。把图放进 `data/raw/`,依次跑 `validate` 和 `report`,读试拍判定。某条件未达标(CER 均值比清晰基准高不到 5 个百分点,或不到 2/3 的图高于该页基准)就只重拍该条件,加重缺陷。注意不要让缺陷重到完全不可识别:CER 接近 100% 对后续去模糊实验同样没用,目标区间约 30%~70%。
+**What to build:** Manual work. Once the page list is settled, first generate the CSV skeleton with 06 and make the split with 02. Pick 2–3 pages from the tuning set (one each of paper, book page and table is suggested), shoot 12 images per page per the protocol, mark `pilot` as true for these pages in the CSV, and fill in light, captured_at and the other fields. Put the images in `data/raw/`, run `validate` and then `report`, and read the pilot verdict. If a condition fails (mean CER less than 5 percentage points above the clean baseline, or fewer than 2/3 of the images above the page's baseline), reshoot only that condition with heavier defects. Take care not to make the defect so heavy that the text is entirely unrecognizable: a CER close to 100% is equally useless for the later deblurring experiments, and the target range is about 30%–70%.
 
 **Blocked by:** 06, 07
 
 **Status:** ready-for-human
 
-- [ ] 2~3 个试拍页取自调参集,每页 12 张,CSV 里 pilot=true
-- [ ] `validate` 通过(0 错误)
-- [ ] `report` 跑通真实图,记下单张图 OCR 耗时
-- [ ] 清晰图 CER 合理(论文页约个位数);若很高,先查方向、文字层、拍摄是否完整
-- [ ] 模糊、阴影、透视各自的试拍判定都"达标",否则按条件重拍并更新 CSV
-- [ ] 抽 2~3 张图,用 `tesseract` 命令行手动跑一遍,与 `p0_results.json` 里的 CER 对一下
+- [ ] 2–3 pilot pages taken from the tuning set, 12 images each, pilot=true in the CSV
+- [ ] `validate` passes (0 errors)
+- [ ] `report` runs through on the real images, and the OCR time per image is noted
+- [ ] Clean-image CER is reasonable (single digits for paper pages); if very high, first check orientation, the text layer and whether the shoot is complete
+- [ ] The pilot verdicts of blur, shadow and perspective all "pass", otherwise reshoot per condition and update the CSV
+- [ ] Pick 2–3 images, run the `tesseract` command line by hand, and compare with the CER in `p0_results.json`
 
 ## Comments
 
-- 单图快速试:`python -m eval.run data/raw/xxx.jpg data/pdf/xxx.pdf --page N`。
-- 试拍达标的图保留并计入正式数据;`split` 一旦写入不可覆盖,所以 `split` 在选页定稿之后、试拍之前做一次即可。
+- Quick single-image trial: `python -m eval.run data/raw/xxx.jpg data/pdf/xxx.pdf --page N`.
+- Pilot images that pass are kept and count toward the formal data; `split` cannot be overwritten once written, so do `split` once after the page selection is final and before the pilot.

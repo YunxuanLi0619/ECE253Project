@@ -1,18 +1,18 @@
-# 01: 元数据校验
+# 01: Metadata validation
 
-**What to build:** 给定元数据 CSV、图片目录和 PDF 目录,命令行入口能判断自采数据是否合乎拍摄协议,并对每个问题给出指名道姓的错误信息。校验内容:文件名符合 `p<页>_<条件>_<序号>.jpg` 且与 CSV 行一一对应;条件代码只能是 clean / blur / shadow / persp / combo;每页张数为 1/3/3/3/2;每页都能关联到源 PDF 及页码并成功提取 ground truth(经共用归一化);文字层为空或过短时警告;表格页读序疑似错乱时警告。CSV 字段集见规格(含 pilot、notes,以及页→PDF 关联字段)。
+**What to build:** Given the metadata CSV, the image directory and the PDF directory, the command-line entry point can tell whether the self-collected data follows the capture protocol, and gives an error message that names the culprit for every problem. What is validated: file names match `p<page>_<condition>_<seq>.jpg` and correspond one-to-one with the CSV rows; condition codes are only clean / blur / shadow / persp / combo; the per-page counts are 1/3/3/3/2; every page can be linked to its source PDF and page number and its ground truth extracted successfully (through the shared normalization); a warning when the text layer is empty or too short; a warning when the reading order of a table page looks scrambled. See the spec for the CSV field set (including pilot, notes, and the page→PDF link fields).
 
 **Blocked by:** None (can start immediately)
 
 **Status:** done (pending review)
 
-- [x] 合法的小型假数据集通过校验
-- [x] 错误命名、缺行、孤立图片、未知条件、每页张数不对,各自产生指明文件或行的信息
-- [x] 文字层为空或过短的页给出警告
-- [x] 每页都能得到归一化后的 ground truth
-- [x] 测试只经命令行入口,用小型假数据集(假 CSV + 合成图 + 小 PDF)
+- [x] A valid small fake dataset passes validation
+- [x] Wrong naming, a missing row, an orphan image, an unknown condition and wrong per-page counts each produce a message naming the file or row
+- [x] Pages with an empty or too-short text layer give a warning
+- [x] Every page yields normalized ground truth
+- [x] Tests go only through the command-line entry point, using a small fake dataset (fake CSV + synthetic images + small PDF)
 
 ## Comments
 
-- 实现:`python -m eval.cli validate --csv … --images … --pdfs … [--min-chars N]`(`src/eval/cli.py`、`src/eval/dataset.py`),测试 `tests/test_validate.py`(20 条,只经 CLI),假数据构造在 `tests/fakedata.py`。
-- 决定:CSV 页→PDF 关联字段命名为 `pdf_file`(PDF 目录下的文件名)和 `pdf_page`(1 起);文字层"过短"阈值默认 100 字符(`--min-chars`);表格读序疑似错乱 = pdftotext 默认读序与 `-layout` 行序的 WER > 0.3。出错退出码 1,警告不影响退出码 0,CSV 读不了为 2。
+- Implementation: `python -m eval.cli validate --csv … --images … --pdfs … [--min-chars N]` (`src/eval/cli.py`, `src/eval/dataset.py`), tests in `tests/test_validate.py` (20 cases, CLI only), fake data built in `tests/fakedata.py`.
+- Decisions: the CSV page→PDF link fields are named `pdf_file` (file name in the PDF directory) and `pdf_page` (1-based); the "too short" text-layer threshold defaults to 100 characters (`--min-chars`); suspected scrambled table reading order = WER > 0.3 between the default pdftotext reading order and the `-layout` line order. Errors exit with code 1, warnings do not affect exit code 0, an unreadable CSV gives 2.

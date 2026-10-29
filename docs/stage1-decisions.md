@@ -1,43 +1,43 @@
-# 阶段 1 决定清单(grill 结果)
+# Stage 1 Decisions (grill results)
 
-## 选页
-- 共 36 页,全英文,纯文本为主,不放公式和大图。论文 12(单栏 6 / 双栏 6)、书页 10、表格 8、小票 6。
-- 小票和表格自己用 LaTeX/HTML 排版导出,保证有文字层;表格页检查 pdftotext 读序,错乱则换页。
-- 字号拉开:论文 9–10pt、书页 11–12pt、小票 8–9pt 等宽、表格 8–10pt。
+## Page selection
+- 36 pages in total, all English, mostly plain text, no formulas or large figures. Paper 12 (single-column 6 / two-column 6), book page 10, table 8, receipt 6.
+- Receipts and tables are typeset by ourselves in LaTeX/HTML and exported, which guarantees a text layer; for table pages check the pdftotext reading order and swap the page if it is scrambled.
+- Font sizes spread out: paper 9–10pt, book page 11–12pt, receipt 8–9pt monospace, table 8–10pt.
 
-## 拍摄协议
-- 手机 A 拍奇数页、B 拍偶数页,每种文档类型在两部手机上各占一半。
-- 清晰基准:手机支架垂直俯拍;同一房间顶灯;深色桌布。
-- 模糊 3 张:横向平移 / 纵向手抖 / 斜向边走边拍各一,记录方向类别。
-- 透视:桌面贴量角器模板,15°/30°/45°,误差 ±5°。
-- 叠加 2 张:一张硬阴影、一张软阴影。
-- 原始图不动像素,不缩放不裁剪,读图时按 EXIF 转正。
+## Capture protocol
+- Phone A shoots odd pages, B shoots even pages; each document type is split half and half between the two phones.
+- Clean baseline: phone on a stand shooting straight down; ceiling light of the same room; dark tablecloth.
+- Blur, 3 shots: one each of horizontal translation / vertical hand shake / diagonal shooting while walking; record the direction class.
+- Perspective: protractor template taped to the desk, 15°/30°/45°, tolerance ±5°.
+- Combo, 2 shots: one with a hard shadow, one with a soft shadow.
+- Raw images keep their pixels: no scaling or cropping; rotate upright by EXIF when reading.
 
-## 命名与元数据
-- 文件名 `p07_blur_2.jpg`;条件代码 clean / blur / shadow / persp / combo;序号为每页每条件内从 1 起。
-- CSV 字段:filename, page_id, doc_type, condition, seq, phone_model, light, angle_deg, blur_dir, shadow_type, split, captured_at, resolution, pilot, notes。split 由脚本写入。
+## Naming and metadata
+- File name `p07_blur_2.jpg`; condition codes clean / blur / shadow / persp / combo; the sequence number starts at 1 within each condition of each page.
+- CSV fields: filename, page_id, doc_type, condition, seq, phone_model, light, angle_deg, blur_dir, shadow_type, split, captured_at, resolution, pilot, notes. split is written by the script.
 
-## 划分
-- 12 调参 / 24 测试,按类型分层(论文 4/8、书页 3/7、表格 3/5、小票 2/4),种子 253。
-- 手机在两边大致均衡,拍摄前最多重抽一次;划分文件生成后提交,不再改。试拍页取自调参集。
+## Split
+- 12 tuning / 24 test, stratified by type (paper 4/8, book 3/7, table 3/5, receipt 2/4), seed 253.
+- Phones roughly balanced on both sides, with at most one redraw before shooting; once the split file is generated it is committed and not changed again. Pilot pages are taken from the tuning set.
 
-## 试拍
-- 4 页(每类 1 页)× 清晰/模糊/阴影/透视各 3 张,约 40 张。
-- 达标:条件 CER 均值比清晰基准高 ≥5 个百分点,且 ≥2/3 的图高于该页基准;基准本身就差的页改看 ≥1.5 倍。
-- 未达标只补拍该条件并加重缺陷。试拍图保留,pilot=true。
+## Pilot
+- 4 pages (1 per type) × 3 shots each of clean/blur/shadow/perspective, about 40 images.
+- Pass: the condition's mean CER is ≥5 percentage points above the clean baseline, and ≥2/3 of the images are above the page's baseline; for pages whose baseline is already poor, look at ≥1.5× instead.
+- If it fails, reshoot only that condition with heavier defects. Pilot images are kept, with pilot=true.
 
-## 公开数据集
-- SmartDoc-QA 为主(Zenodo,CC BY 4.0,约 13.7 GB,只取模糊/光照/透视各一部分),沿用其三类文档。
-- SmartDoc Ch.1 sample(21 MB)只测角点成功率。
-- 阴影用 RDD(Google Drive,许可未声明);DocUNet、Hradiš 暂不做。
-- 真实模糊文档无合适公开集:用自采 + 合成模糊代替。
-- 参照文本三种来源各自成表(见 ADR-0002);RDD 只用伪 ground truth,只解读相对改善。
-- 下载前待办:向 icdar.smartdoc@gmail.com 告知用途(作者请求);许可以原始页面为准再核一次。
+## Public datasets
+- SmartDoc-QA is the main one (Zenodo, CC BY 4.0, about 13.7 GB, take only a portion each of blur/lighting/perspective), keeping its three document classes.
+- SmartDoc Ch.1 sample (21 MB) is used only for the corner success rate.
+- Shadow uses RDD (Google Drive, license not stated); DocUNet and Hradiš are not done for now.
+- There is no suitable public set of real blurred documents: use self-collected + synthetic blur instead.
+- Each of the three reference-text sources gets its own table (see ADR-0002); RDD uses only pseudo ground truth and is interpreted only as relative improvement.
+- To-do before downloading: notify icdar.smartdoc@gmail.com of the use (the authors' request); re-check licenses against the original pages.
 
-## 基线口径
-- 基线(P0)跑全部 36 页;预处理评测只报测试集。
-- 主表:条件 × 文档类型;格内先同页同条件取均值,再对页取均值;标 n 和中位数;n<5 不画区间,其余用按页自助法 95% 区间。
-- 小票清晰基准 CER>20% 时仍保留,但单独讨论,不并入总体平均。
+## Baseline convention
+- The baseline (P0) runs on all 36 pages; the preprocessing evaluation reports only the test set.
+- Main table: condition × document type; within a cell, first average within the same page and condition, then average over pages; show n and the median; no interval for n<5, otherwise a by-page bootstrap 95% interval.
+- If the receipt clean-baseline CER is >20%, keep it but discuss it separately and do not fold it into the overall average.
 
-## 完成标准
-约 360 张图 + 元数据 CSV;模糊/阴影/透视三种条件的基线 CER 都明显高于清晰基准,否则重拍。
+## Completion criteria
+About 360 images + metadata CSV; the baseline CER of the blur/shadow/perspective conditions is clearly above the clean baseline, otherwise reshoot.

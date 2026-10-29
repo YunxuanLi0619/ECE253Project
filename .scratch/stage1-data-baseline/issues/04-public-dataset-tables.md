@@ -1,25 +1,25 @@
-不是
+No
 
-# 04: 公开数据集分表与核对清单
+# 04: Public dataset tables and checklist
 
-**What to build:** 公开数据集的评测结果按参照来源各自成表(ADR-0002):SmartDoc-QA 为人工转写,按其自带三类文档分组;RDD 为伪 ground truth,表头标明只反映相对改善。所有参照文本仍过同一个归一化。同时落一份核对清单文档,逐个数据集记录 URL、下载方式、体量、许可、引用、是否带文本、用途;下载前的人工事项(向 SmartDoc 作者告知用途、对照原始页面复核许可)写在清单里。
+**What to build:** Evaluation results of public datasets get one table per reference source (ADR-0002): SmartDoc-QA uses human transcription, grouped by its own three document classes; RDD uses pseudo ground truth, with the header stating that it reflects only relative improvement. All reference texts still pass through the same normalization. Also add a checklist document that records, dataset by dataset, the URL, download method, size, license, citation, whether it has text, and intended use; the manual items before downloading (telling the SmartDoc authors about the use, re-verifying licenses against the original pages) are written in the checklist.
 
 **Blocked by:** 03
 
 **Status:** done (pending review)
 
-- [X] 三种参照来源的结果不出现在同一张表里
-- [X] SmartDoc-QA 表按其三类文档分组,表头注明"人工转写"
-- [X] RDD 表头注明"伪 ground truth,仅相对改善"
-- [X] 核对清单覆盖 SmartDoc-QA、SmartDoc Ch.1 sample、RDD,并列出下载前的人工待办
-- [X] 测试用小型假的公开集目录,经命令行入口验证分表行为
+- [X] Results from the three reference sources do not appear in the same table
+- [X] The SmartDoc-QA table is grouped by its three document classes, with the header stating "human transcription"
+- [X] The RDD table header states "pseudo ground truth, relative improvement only"
+- [X] The checklist covers SmartDoc-QA, the SmartDoc Ch.1 sample and RDD, and lists the manual to-dos before downloading
+- [X] Tests use a small fake public-dataset directory and verify the table splitting through the command-line entry point
 
 ## Comments
 
-实现完成:`python -m eval.cli public --root PUBLIC_DIR --out OUT_DIR [--ocr-texts FILE]`(`src/eval/public.py`、`cli.py`),测试 `tests/test_public.py`(17 条,经 CLI;假目录构造在 `tests/fakedata.py::FakePublic`),核对清单 `docs/public-datasets-checklist.md`。
+Implementation done: `python -m eval.cli public --root PUBLIC_DIR --out OUT_DIR [--ocr-texts FILE]` (`src/eval/public.py`, `cli.py`), tests in `tests/test_public.py` (17 cases, via the CLI; the fake directory is built in `tests/fakedata.py::FakePublic`), checklist in `docs/public-datasets-checklist.md`.
 
-- 决定:公开集目录格式是我定的(清单末尾有说明),因为 spec 没规定:`<root>/smartdoc_qa/`(manifest + images + transcriptions)与 `<root>/rdd/`(manifest + images,condition 为 clean/shadow)。每个数据集各写一份 `public_<名>.md/.json`,所以不同参照来源物理上不在同一文件。
-- RDD:shadow 图对同场景 clean 图的 OCR(过 normalize)算 CER,clean 图本身不计分;SmartDoc-QA 按 doc_class 分列、按 distortion 分行,格内同自采报告(页层均值、n、中位数、n≥5 才给区间)。
-- OCR 结果按图片 sha256 缓存在 `public_ocr_cache.json`(头部变了就作废)。
-- 清单里的 SmartDoc 作者邮箱来自阶段 1 决定清单,未能在官方站点核实(其 HTTPS 证书报错);人工待办均未完成。
-- 当前目录不是 git 仓库,所以没有提交,也无法用基于 diff 的 /code-review。
+- Decision: I chose the public-dataset directory format (described at the end of the checklist) because the spec does not define one: `<root>/smartdoc_qa/` (manifest + images + transcriptions) and `<root>/rdd/` (manifest + images, condition is clean/shadow). Each dataset writes its own `public_<name>.md/.json`, so results from different reference sources are physically never in the same file.
+- RDD: the CER of a shadow image is computed against the OCR (passed through normalize) of the clean image of the same scene; the clean image itself is not scored. SmartDoc-QA is split into columns by doc_class and rows by distortion, and cells work as in the self-collected report (page-level means, n, median, interval only for n ≥ 5).
+- OCR results are cached by image sha256 in `public_ocr_cache.json` (invalidated when the header changes).
+- The SmartDoc authors' email in the checklist comes from the stage 1 decisions list and could not be verified on the official site (its HTTPS certificate errors); the manual to-dos are all still open.
+- The current directory is not a git repository, so nothing was committed and the diff-based /code-review could not be used.

@@ -15,11 +15,11 @@ BLUR_DIRS = ("horizontal", "vertical", "diagonal")
 PERSP_ANGLES = ("15", "30", "45")
 COMBO_SHADOWS = ("hard", "soft")
 SHOT_HINTS = {
-    "clean": "清晰基准:平放,手机支架垂直俯拍,同一房间顶灯,深色桌布",
-    "blur": {"horizontal": "模糊:横向平移", "vertical": "模糊:纵向手抖", "diagonal": "模糊:斜向边走边拍"},
-    "shadow": "阴影(协议未规定类型,拍时记入 shadow_type)",
-    "persp": "透视:倾斜 {angle}°(±5°),桌面量角器模板",
-    "combo": "叠加:同时倾斜、{shadow}阴影、运动模糊",
+    "clean": "Clean baseline: flat, phone on a stand shooting straight down, same room ceiling light, dark tablecloth",
+    "blur": {"horizontal": "Blur: horizontal translation", "vertical": "Blur: vertical hand shake", "diagonal": "Blur: diagonal, shooting while walking"},
+    "shadow": "Shadow (type not specified by the protocol, record it in shadow_type while shooting)",
+    "persp": "Perspective: tilt {angle}° (±5°), protractor template on the desk",
+    "combo": "Combo: tilt, {shadow} shadow and motion blur at the same time",
 }
 
 
@@ -75,21 +75,21 @@ def _shots(cond: str):
         if cond == "blur":
             hint = hint[blur_dir]
         elif cond in ("persp", "combo"):
-            hint = hint.format(angle=angle, shadow="硬" if shadow == "hard" else "软")
+            hint = hint.format(angle=angle, shadow="hard" if shadow == "hard" else "soft")
         yield seq, blur_dir, angle, shadow, hint
 
 
 def build_template(pages_csv: Path) -> Template:
     pages = _read_pages(pages_csv)
-    rows, warnings, lines = [], [], ["# 拍摄清单", ""]
+    rows, warnings, lines = [], [], ["# Shot List", ""]
     phones: dict[str, Counter] = {}
     for page in pages:
         label = page["label"]
         phone = page["phone"] or ("A" if int(label[1:]) % 2 else "B")
         phones.setdefault(page["doc_type"], Counter())[phone] += 1
-        tag = " · 试拍" if page["pilot"] else ""
-        lines += [f"## {label} · {page['doc_type']} · 手机 {phone} · "
-                  f"{page['pdf_file']} 第 {page['pdf_page']} 页{tag}", ""]
+        tag = " · pilot" if page["pilot"] else ""
+        lines += [f"## {label} · {page['doc_type']} · phone {phone} · "
+                  f"{page['pdf_file']} page {page['pdf_page']}{tag}", ""]
         for cond in CONDITIONS:
             for seq, blur_dir, angle, shadow, hint in _shots(cond):
                 filename = f"{label}_{cond}_{seq}.jpg"

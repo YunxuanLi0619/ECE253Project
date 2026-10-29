@@ -1,19 +1,19 @@
 Status: ready-for-agent
 
-# 阶段 1:数据采集与基线 — 数据工具链规格
+# Stage 1: Data Collection and Baseline — Data Toolchain Spec
 
 ## Problem Statement
 
-我要研究手机拍文档为什么拖累 OCR。阶段 1 要采集约 360 张自采图(36 页 × 每页 12 张)并跑出不做预处理(P0)的基线 CER/WER。现在只有单图评测脚本:没有办法检查拍摄数据是否合乎协议,没有可复现的按页调参/测试划分,也没有按「条件 × 文档类型」汇总的基线报告,更无法客观判断某种缺陷是否「明显高于清晰基准」,从而决定是否重拍。
+I want to study why phone-photographed documents hurt OCR. Stage 1 collects about 360 self-collected images (36 pages × 12 shots per page) and produces the baseline CER/WER without any preprocessing (P0). Right now there is only a single-image evaluation script: there is no way to check whether the captured data follows the protocol, no reproducible by-page tuning/test split, no baseline report aggregated by "condition × document type", and no way to judge objectively whether a defect is "clearly above the clean baseline" and therefore whether to reshoot.
 
 ## Solution
 
-提供一个命令行入口,输入元数据 CSV、图片目录和 PDF 目录,完成三件事:校验数据是否合乎拍摄协议;按固定种子做分层的按页划分并写回 CSV;对全部图跑 P0 OCR 评测并输出「条件 × 文档类型」的基线报告,同时给出试拍批的达标判定。评测口径沿用 ADR-0001,公开数据集的 CER 按 ADR-0002 单独成表。
+Provide a command-line entry point that takes the metadata CSV, the image directory and the PDF directory and does three things: validate that the data follows the capture protocol; make a stratified by-page split with a fixed seed and write it back to the CSV; run the P0 OCR evaluation on all images and output a "condition × document type" baseline report, together with the pass/fail verdict for the pilot batch. The evaluation convention follows ADR-0001, and the CER of public datasets goes in separate tables per ADR-0002.
 
 ## User Stories
 
 1. As a researcher, I want the metadata CSV validated against the capture protocol, so that I catch naming or labeling mistakes before spending time on OCR.
-2. As a researcher, I want filenames checked against `p<页编号>_<条件>_<序号>.jpg` and against the CSV rows, so that no image is orphaned or missing a row.
+2. As a researcher, I want filenames checked against `p<page>_<condition>_<seq>.jpg` and against the CSV rows, so that no image is orphaned or missing a row.
 3. As a researcher, I want condition codes restricted to clean / blur / shadow / persp / combo, so that typos don't create phantom conditions.
 4. As a researcher, I want each page's counts checked (1 clean, 3 blur, 3 shadow, 3 persp, 2 combo), so that I know which shots are missing.
 5. As a researcher, I want each page's PDF source and page number linked in the data, so that ground truth can be extracted automatically.
@@ -82,7 +82,7 @@ Status: ready-for-agent
 
 ## Further Notes
 
-- Sources of truth: `docs/stage1-decisions.md`, ADR-0001, ADR-0002, and `CONTEXT.md` terms (页, 清晰基准, 叠加组, 试拍批, 伪 ground truth, 人工转写).
+- Sources of truth: `docs/stage1-decisions.md`, ADR-0001, ADR-0002, and `CONTEXT.md` terms (Page, Clean baseline, Combo set, Pilot batch, Pseudo ground truth, Human transcription).
 - Receipt pages may have a low clean-baseline CER ceiling; discuss separately rather than dropping.
 - Before using public datasets: notify the SmartDoc authors of usage and re-verify licenses on the original pages.
 - Stage-1 exit: about 360 images plus CSV, with blur, shadow, and perspective baselines clearly above the clean baseline; otherwise reshoot.

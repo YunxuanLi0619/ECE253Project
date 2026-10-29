@@ -1,19 +1,19 @@
-# 07: 选定 36 页 PDF 并打印
+# 07: Select and print the 36 PDF pages
 
-**What to build:** 人工工作。选出 36 页英文、带文字层的 PDF 页:论文 12(单栏 6、双栏 6)、书页 10、表格 8、小票 6。把页清单写成 CSV(列:page_id, doc_type, pdf_file, pdf_page),PDF 放进 `data/pdf/`。打印这些页(纸质),用于拍摄。每页用 `validate` 或 `python -m eval.run` 抽查文字层是否可提取、长度是否正常。表格页注意 pdftotext 读序;小票若没有文字层,换页或改用伪 ground truth(须单独成表,见 ADR-0002)。
+**What to build:** Manual work. Select 36 English PDF pages with a text layer: paper 12 (single-column 6, two-column 6), book page 10, table 8, receipt 6. Write the page list as a CSV (columns: page_id, doc_type, pdf_file, pdf_page) and put the PDFs in `data/pdf/`. Print these pages (on paper) for shooting. For every page, spot-check with `validate` or `python -m eval.run` that the text layer is extractable and of normal length. For table pages watch the pdftotext reading order; if a receipt has no text layer, swap the page or use pseudo ground truth (which must go in its own table, see ADR-0002).
 
 **Blocked by:** None (can start immediately)
 
 **Status:** ready-for-human
 
-- [ ] 36 页选定,类型比例 12/10/8/6,单双栏各 6 页的论文
-- [ ] 页清单 CSV 写好,`pdf_file` 与 `pdf_page` 准确
-- [ ] 全部 PDF 放进 `data/pdf/`
-- [ ] 每页文字层可提取,不是空文本或明显乱码
-- [ ] 表格页读序没有被警告;有警告的页已更换
-- [ ] 36 页已打印
+- [ ] 36 pages selected, with type ratio 12/10/8/6 and 6 single-column and 6 two-column papers
+- [ ] Page-list CSV written, with accurate `pdf_file` and `pdf_page`
+- [ ] All PDFs placed in `data/pdf/`
+- [ ] The text layer of every page is extractable, not empty text or obvious garbage
+- [ ] No reading-order warnings on table pages; pages with warnings have been replaced
+- [ ] The 36 pages are printed
 
 ## Comments
 
-- 原计划文档写的是 30 页,你在阶段 1 的讨论里改成了 36 页,以 `docs/stage1-decisions.md` 为准。
-- 试拍页要从调参集里取,而调参集由 `split` 决定,所以选页完成后先 `split`(见 02),再选试拍页。
+- The original plan document said 30 pages; in the stage 1 discussion you changed it to 36, and `docs/stage1-decisions.md` is authoritative.
+- Pilot pages must come from the tuning set, and the tuning set is decided by `split`, so after selecting pages run `split` first (see 02) and then pick the pilot pages.

@@ -34,7 +34,7 @@ def test_misnamed_file_names_the_file(ds, capsys):
     (ds.images / "p01_clean_1.jpg").rename(ds.images / "page1-clean.jpg")
     code, out = validate(ds, capsys)
     assert code == 1
-    assert any("page1-clean.jpg" in l and "p<页>_<条件>_<序号>.jpg" in l for l in lines(out, "ERROR"))
+    assert any("page1-clean.jpg" in l and "p<page>_<condition>_<seq>.jpg" in l for l in lines(out, "ERROR"))
 
 
 def test_unknown_condition_names_the_file(ds, capsys):
